@@ -80,9 +80,11 @@ func (p *Protocol) Start(clusterConfig cluster.Cluster, registry *node.Registry)
 	})
 
 	var nodeID uint64
-	members := make(map[uint64]string)
+	clientMembers := make(map[uint64]string)
+	serverMembers := make(map[uint64]string)
 	for i, member := range nodes {
-		members[uint64(i+1)] = fmt.Sprintf("%s:%d", member.Host, member.APIPort)
+		clientMembers[uint64(i+1)] = fmt.Sprintf("%s:%d", member.Host, member.APIPort)
+		serverMembers[uint64(i+1)] = fmt.Sprintf("%s:%d", member.Host, member.ProtocolPort)
 		if member.ID == clusterConfig.MemberID {
 			nodeID = uint64(i + 1)
 		}
@@ -127,12 +129,12 @@ func (p *Protocol) Start(clusterConfig cluster.Cluster, registry *node.Registry)
 		streams := newStreamManager()
 		fsm := newStateMachine(clusterConfig, registry, streams)
 		p.mu.Lock()
-		p.client = newClient(clusterID, nodeID, node, members, streams)
+		p.client = newClient(clusterID, nodeID, node, clientMembers, streams)
 		p.mu.Unlock()
 		return fsm
 	}
 
-	p.server = newServer(clusterID, members, node, config, fsmFactory)
+	p.server = newServer(clusterID, serverMembers, node, config, fsmFactory)
 	if err := p.server.Start(); err != nil {
 		return err
 	}
