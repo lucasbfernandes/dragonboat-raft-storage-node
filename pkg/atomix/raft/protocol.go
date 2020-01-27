@@ -29,7 +29,6 @@ import (
 	"sync"
 )
 
-const walDir = "/var/lib/atomix/wal"
 const dataDir = "/var/lib/atomix/data"
 const rttMillisecond = 200
 
@@ -113,7 +112,7 @@ func (p *Protocol) Start(clusterConfig cluster.Cluster, registry *node.Registry)
 	}
 
 	nodeConfig := raftconfig.NodeHostConfig{
-		WALDir:            walDir,
+		WALDir:            dataDir,
 		NodeHostDir:       dataDir,
 		RTTMillisecond:    rttMillisecond,
 		RaftAddress:       address,

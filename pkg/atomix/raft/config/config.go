@@ -20,7 +20,7 @@ const (
 	defaultElectionTimeout   = 5 * time.Second
 	defaultHeartbeatInterval = 500 * time.Millisecond
 	defaultSnapshotInterval  = 1 * time.Minute
-	defaultSnapshotThreshold = 1000
+	defaultSnapshotThreshold = 10000
 )
 
 // GetElectionTimeoutOrDefault returns the configured election timeout if set, otherwise the default election timeout
