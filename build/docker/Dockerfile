@@ -30,10 +30,14 @@ COPY vendor/ /go/src/github.com/atomix/dragonboat-raft-replica/vendor/
 COPY pkg/ /go/src/github.com/atomix/dragonboat-raft-replica/pkg/
 COPY cmd/ /go/src/github.com/atomix/dragonboat-raft-replica/cmd/
 
-RUN cd /go/src/github.com/atomix/dragonboat-raft-replica && \
-    make && \
-    mv /go/src/github.com/atomix/dragonboat-raft-replica/build/_output/dragonboat-raft-replica /usr/local/bin/dragonboat-raft-replica
-RUN go clean -cache -modcache && \
-    rm -rf /go/src/github.com/atomix/dragonboat-raft-replica
+RUN cd /go/src/github.com/atomix/dragonboat-raft-replica && make
+
+FROM ubuntu:18.04
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  librocksdb-dev \
+  && rm -rf /var/lib/apt/lists/*
+
+COPY --from=build /go/src/github.com/atomix/dragonboat-raft-replica/build/_output/dragonboat-raft-replica /usr/local/bin/dragonboat-raft-replica
 
 ENTRYPOINT ["dragonboat-raft-replica"]
