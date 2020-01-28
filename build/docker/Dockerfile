@@ -25,16 +25,15 @@ RUN go get -u google.golang.org/grpc
 
 ENV GO111MODULE=on
 
-COPY go.mod /go/src/github.com/atomix/dragonboat-raft-replica/
-
-RUN cd /go/src/github.com/atomix/dragonboat-raft-replica && \
-    go mod download && \
-    rm -rf /go/src/github.com/atomix/dragonboat-raft-replica
-
-COPY . /go/src/github.com/atomix/dragonboat-raft-replica/
+COPY Makefile go.mod go.sum /go/src/github.com/atomix/dragonboat-raft-replica/
+COPY vendor/ /go/src/github.com/atomix/dragonboat-raft-replica/vendor/
+COPY pkg/ /go/src/github.com/atomix/dragonboat-raft-replica/pkg/
+COPY cmd/ /go/src/github.com/atomix/dragonboat-raft-replica/cmd/
 
 RUN cd /go/src/github.com/atomix/dragonboat-raft-replica && \
     make && \
     mv /go/src/github.com/atomix/dragonboat-raft-replica/build/_output/dragonboat-raft-replica /usr/local/bin/dragonboat-raft-replica
+RUN go clean -cache -modcache && \
+    rm -rf /go/src/github.com/atomix/dragonboat-raft-replica
 
 ENTRYPOINT ["dragonboat-raft-replica"]

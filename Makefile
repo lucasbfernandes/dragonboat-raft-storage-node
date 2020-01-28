@@ -44,7 +44,7 @@ all: build
 
 build: # @HELP build the source code
 build:
-	CGO_ENABLED=1 $(GOCMD) -o build/_output/dragonboat-raft-replica ./cmd/dragonboat-raft-replica
+	CGO_ENABLED=1 $(GOCMD) -mod vendor -o build/_output/dragonboat-raft-replica ./cmd/dragonboat-raft-replica
 
 test: # @HELP run the unit tests and source code validation
 test: build license_check linters
@@ -69,7 +69,13 @@ proto:
 		onosproject/protoc-go:stable
 
 image: # @HELP build dragonboat-raft-replica Docker image
+	@go mod vendor
 	docker build . -f build/docker/Dockerfile -t atomix/dragonboat-raft-replica:${ATOMIX_DRAGONBOAT_RAFT_NODE_VERSION}
+	@rm -r vendor
 
 push: # @HELP push dragonboat-raft-replica Docker image
 	docker push atomix/dragonboat-raft-replica:${ATOMIX_DRAGONBOAT_RAFT_NODE_VERSION}
+
+clean: # @HELP clean build files
+clean:
+	@rm -rf vendor build/_output
