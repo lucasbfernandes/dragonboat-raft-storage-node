@@ -24,7 +24,6 @@ import (
 	raftconfig "github.com/lni/dragonboat/v3/config"
 	"github.com/lni/dragonboat/v3/raftio"
 	"github.com/lni/dragonboat/v3/statemachine"
-	"hash/fnv"
 	"sort"
 	"sync"
 )
@@ -37,6 +36,8 @@ func NewProtocol(partitionConfig *controller.PartitionConfig, protocolConfig *co
 	return &Protocol{
 		partitionConfig: partitionConfig,
 		protocolConfig:  protocolConfig,
+		clients:         make(map[int]*Partition),
+		servers:         make(map[int]*Server),
 	}
 }
 
@@ -46,12 +47,12 @@ type Protocol struct {
 	partitionConfig *controller.PartitionConfig
 	protocolConfig  *config.ProtocolConfig
 	mu              sync.RWMutex
-	client          *Client
-	server          *Server
+	clients         map[int]*Partition
+	servers         map[int]*Server
 }
 
 type startupListener struct {
-	ch   chan<- struct{}
+	ch   chan<- int
 	mu   sync.Mutex
 	done bool
 }
@@ -60,9 +61,14 @@ func (l *startupListener) LeaderUpdated(info raftio.LeaderInfo) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	if !l.done && info.LeaderID > 0 {
-		close(l.ch)
-		l.done = true
+		l.ch <- int(info.ClusterID)
 	}
+}
+
+func (l *startupListener) close() {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	l.done = true
 }
 
 // Start starts the Raft protocol
@@ -89,24 +95,8 @@ func (p *Protocol) Start(clusterConfig cluster.Cluster, registry *node.Registry)
 		}
 	}
 
-	// Compute a cluster ID from the partition ID
-	partitionID := fmt.Sprintf("%s-%s-%d", p.partitionConfig.Partition.Group.Namespace, p.partitionConfig.Partition.Group.Name, p.partitionConfig.Partition.Partition)
-	hash := fnv.New64a()
-	_, _ = hash.Write([]byte(partitionID))
-	clusterID := hash.Sum64()
-
-	config := raftconfig.Config{
-		NodeID:             nodeID,
-		ClusterID:          clusterID,
-		ElectionRTT:        10,
-		HeartbeatRTT:       1,
-		CheckQuorum:        true,
-		SnapshotEntries:    p.protocolConfig.GetSnapshotThresholdOrDefault(),
-		CompactionOverhead: p.protocolConfig.GetSnapshotThresholdOrDefault() / 10,
-	}
-
 	// Create a listener to wait for a leader to be elected
-	startupCh := make(chan struct{})
+	startupCh := make(chan int)
 	listener := &startupListener{
 		ch: startupCh,
 	}
@@ -128,27 +118,68 @@ func (p *Protocol) Start(clusterConfig cluster.Cluster, registry *node.Registry)
 		streams := newStreamManager()
 		fsm := newStateMachine(clusterConfig, registry, streams)
 		p.mu.Lock()
-		p.client = newClient(clusterID, nodeID, node, clientMembers, streams)
+		p.clients[int(clusterID)] = newClient(clusterID, nodeID, node, clientMembers, streams)
 		p.mu.Unlock()
 		return fsm
 	}
 
-	p.server = newServer(clusterID, serverMembers, node, config, fsmFactory)
-	if err := p.server.Start(); err != nil {
-		return err
+	for _, partition := range p.partitionConfig.Partitions {
+		config := raftconfig.Config{
+			NodeID:             nodeID,
+			ClusterID:          uint64(partition.Partition),
+			ElectionRTT:        10,
+			HeartbeatRTT:       1,
+			CheckQuorum:        true,
+			SnapshotEntries:    p.protocolConfig.GetSnapshotThresholdOrDefault(),
+			CompactionOverhead: p.protocolConfig.GetSnapshotThresholdOrDefault() / 10,
+		}
+
+		server := newServer(uint64(partition.Partition), serverMembers, node, config, fsmFactory)
+		if err := server.Start(); err != nil {
+			return err
+		}
+		p.servers[int(partition.Partition)] = server
 	}
-	<-startupCh
+
+	started := make(map[int]bool)
+	for partitionID := range startupCh {
+		started[partitionID] = true
+		if len(started) == len(p.servers) {
+			listener.close()
+			return nil
+		}
+	}
 	return nil
 }
 
-// Client returns the Raft protocol client
-func (p *Protocol) Client() node.Client {
+// Partition returns the given partition client
+func (p *Protocol) Partition(partitionID int) node.Partition {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
-	return p.client
+	return p.clients[partitionID]
+}
+
+// Partitions returns all partition clients
+func (p *Protocol) Partitions() []node.Partition {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	partitions := make([]node.Partition, 0, len(p.clients))
+	for _, client := range p.clients {
+		partitions = append(partitions, client)
+	}
+	sort.Slice(partitions, func(i, j int) bool {
+		return partitions[i].(*Partition).clusterID < partitions[j].(*Partition).clusterID
+	})
+	return partitions
 }
 
 // Stop stops the Raft protocol
 func (p *Protocol) Stop() error {
-	return p.server.Stop()
+	var returnErr error
+	for _, server := range p.servers {
+		if err := server.Stop(); err != nil {
+			returnErr = err
+		}
+	}
+	return returnErr
 }

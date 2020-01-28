@@ -75,5 +75,7 @@ images: # @HELP build dragonboat-raft-replica Docker image
 	@rm -r vendor
 
 clean: # @HELP clean build files
-clean:
 	@rm -rf vendor build/_output
+
+push: # @HELP push dragonboat-raft-replica Docker image
+	docker push atomix/dragonboat-raft-replica:${ATOMIX_DRAGONBOAT_RAFT_NODE_VERSION}

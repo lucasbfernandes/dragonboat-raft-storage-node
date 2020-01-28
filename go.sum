@@ -18,6 +18,10 @@ github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6/go.mod h1:grANhF5
 github.com/armon/go-metrics v0.0.0-20190430140413-ec5e00d3c878/go.mod h1:3AMJUQhVx52RsWOnlkpikZr01T/yAVN2gn0861vByNg=
 github.com/atomix/api v0.0.0-20200123231207-4e5fb1cbaf40 h1:wLOZYpUQvIVrQOEhN5ND4CXq60yHHMPu7+s1wGG7yU8=
 github.com/atomix/api v0.0.0-20200123231207-4e5fb1cbaf40/go.mod h1:Ec7OEwfv1qGASdRZdXxi6TUvwmayT4IkkewDcm7pItI=
+github.com/atomix/api v0.0.0-20200127101916-af75079e8faa h1:K3ebPXBMnTxxM5v/9OWZsYcfcEcThbH7/4deNYHa46Y=
+github.com/atomix/api v0.0.0-20200127101916-af75079e8faa/go.mod h1:Ec7OEwfv1qGASdRZdXxi6TUvwmayT4IkkewDcm7pItI=
+github.com/atomix/api v0.0.0-20200127203446-04e1f5a64ca3 h1:bDuig57FGIQckqGF5kHv+FJu/qytuLKAPnLjokPMntc=
+github.com/atomix/api v0.0.0-20200127203446-04e1f5a64ca3/go.mod h1:Ec7OEwfv1qGASdRZdXxi6TUvwmayT4IkkewDcm7pItI=
 github.com/atomix/atomix-api v0.0.0-20190826211343-dd8f4db3bf77/go.mod h1:joWKUd0zIeYbAQ0vmYHGsnV03ZgRalhceHgnJ3EN0mI=
 github.com/atomix/atomix-api v0.0.0-20191002225141-1ee9c98c7dfd/go.mod h1:joWKUd0zIeYbAQ0vmYHGsnV03ZgRalhceHgnJ3EN0mI=
 github.com/atomix/atomix-api v0.0.0-20191005223910-aa620357faa0/go.mod h1:joWKUd0zIeYbAQ0vmYHGsnV03ZgRalhceHgnJ3EN0mI=
@@ -74,6 +78,15 @@ github.com/atomix/go-framework v0.0.0-20200123235029-e29fc7d6e104/go.mod h1:Dn7t
 github.com/atomix/go-framework v0.0.0-20200124003840-f24758b13aa2/go.mod h1:vo5K/v+rc5mohoZIw9vbyj+Y/EGGaEdF6XVkEvM9CSM=
 github.com/atomix/go-framework v0.0.0-20200124005401-251d56394345 h1:gFEiAzDt/pL0PeNhvNcv8tseCLYGPg5piWseW0HizKc=
 github.com/atomix/go-framework v0.0.0-20200124005401-251d56394345/go.mod h1:G/yTdMGpfwbA2YXym/VEi7op3qZKd1jtGJX0sjcZmpQ=
+github.com/atomix/go-framework v0.0.0-20200124061342-61b0ae5140c9 h1:GyxC/X6SMje0Xg+bQaMHhC76S0mqMfFGN7w+HsElnok=
+github.com/atomix/go-framework v0.0.0-20200127185016-95d136bc2167 h1:/nDYrrWoVI4gLmi6dt28BC7yBLVCitDwNNBHRVv/AO0=
+github.com/atomix/go-framework v0.0.0-20200127185016-95d136bc2167/go.mod h1:1RNsxCHY/Gz0tKosk6/H6Bj9fEeUy20g/ob9jgZELRY=
+github.com/atomix/go-framework v0.0.0-20200127190511-07993ebd883f h1:CWXEJWa8xLqjduwPOhHXSczLGaaj+hJlDFm7m2LwWZ0=
+github.com/atomix/go-framework v0.0.0-20200127190511-07993ebd883f/go.mod h1:1RNsxCHY/Gz0tKosk6/H6Bj9fEeUy20g/ob9jgZELRY=
+github.com/atomix/go-framework v0.0.0-20200127190820-c52862338ab6 h1:Xn8osN+4FjnK7UNwS5aDg+Q3Hx4f/xZFtLWiYpFP8cM=
+github.com/atomix/go-framework v0.0.0-20200127190820-c52862338ab6/go.mod h1:1RNsxCHY/Gz0tKosk6/H6Bj9fEeUy20g/ob9jgZELRY=
+github.com/atomix/go-framework v0.0.0-20200127203639-933ae5cd47da h1:4JI6b7JWqcQlZt3ttKOyMptccq9G8cNJdx6jp+6/Qkw=
+github.com/atomix/go-framework v0.0.0-20200127203639-933ae5cd47da/go.mod h1:1fG7JvUkFvdm8FHl5kopjYqHFyrQLxB76VqYbG4Zwso=
 github.com/atomix/go-local v0.0.0-20200124003802-357f6682b2f4/go.mod h1:MabPkX/j2bN399GVAYGigyvDaAslu7omZoujEfzdKDg=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=

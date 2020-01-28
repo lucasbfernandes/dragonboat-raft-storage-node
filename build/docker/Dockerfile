@@ -29,10 +29,13 @@ COPY Makefile go.mod go.sum /go/src/github.com/atomix/dragonboat-raft-replica/
 COPY vendor/ /go/src/github.com/atomix/dragonboat-raft-replica/vendor/
 COPY pkg/ /go/src/github.com/atomix/dragonboat-raft-replica/pkg/
 COPY cmd/ /go/src/github.com/atomix/dragonboat-raft-replica/cmd/
+<<<<<<< HEAD
 
 RUN cd /go/src/github.com/atomix/dragonboat-raft-replica && make
 
 FROM ubuntu:18.04
+=======
+>>>>>>> Support multiple partitions per cluster
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
   librocksdb-dev \

@@ -25,8 +25,8 @@ import (
 const clientTimeout = 15 * time.Second
 
 // newClient returns a new Raft consensus protocol client
-func newClient(clusterID uint64, nodeID uint64, node *dragonboat.NodeHost, members map[uint64]string, streams *streamManager) *Client {
-	return &Client{
+func newClient(clusterID uint64, nodeID uint64, node *dragonboat.NodeHost, members map[uint64]string, streams *streamManager) *Partition {
+	return &Partition{
 		clusterID: clusterID,
 		nodeID:    nodeID,
 		node:      node,
@@ -36,7 +36,7 @@ func newClient(clusterID uint64, nodeID uint64, node *dragonboat.NodeHost, membe
 }
 
 // Client is the Raft client
-type Client struct {
+type Partition struct {
 	clusterID uint64
 	nodeID    uint64
 	node      *dragonboat.NodeHost
@@ -44,11 +44,11 @@ type Client struct {
 	streams   *streamManager
 }
 
-func (c *Client) MustLeader() bool {
+func (c *Partition) MustLeader() bool {
 	return true
 }
 
-func (c *Client) IsLeader() bool {
+func (c *Partition) IsLeader() bool {
 	leader, ok, err := c.node.GetLeaderID(c.clusterID)
 	if !ok || err != nil {
 		return false
@@ -56,7 +56,7 @@ func (c *Client) IsLeader() bool {
 	return leader == c.nodeID
 }
 
-func (c *Client) Leader() string {
+func (c *Partition) Leader() string {
 	leader, ok, err := c.node.GetLeaderID(c.clusterID)
 	if !ok || err != nil {
 		return ""
@@ -64,7 +64,7 @@ func (c *Client) Leader() string {
 	return c.members[leader]
 }
 
-func (c *Client) Write(ctx context.Context, input []byte, stream streams.WriteStream) error {
+func (c *Partition) Write(ctx context.Context, input []byte, stream streams.WriteStream) error {
 	streamID, stream := c.streams.addStream(stream)
 	entry := &Entry{
 		Value:     input,
@@ -84,7 +84,7 @@ func (c *Client) Write(ctx context.Context, input []byte, stream streams.WriteSt
 	return nil
 }
 
-func (c *Client) Read(ctx context.Context, input []byte, stream streams.WriteStream) error {
+func (c *Partition) Read(ctx context.Context, input []byte, stream streams.WriteStream) error {
 	query := queryContext{
 		value:  input,
 		stream: stream,
