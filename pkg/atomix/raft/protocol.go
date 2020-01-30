@@ -32,7 +32,7 @@ const dataDir = "/var/lib/atomix/data"
 const rttMillisecond = 200
 
 // NewProtocol returns a new Raft Protocol instance
-func NewProtocol(partitionConfig *controller.PartitionConfig, protocolConfig *config.ProtocolConfig) *Protocol {
+func NewProtocol(partitionConfig *controller.ClusterConfig, protocolConfig *config.ProtocolConfig) *Protocol {
 	return &Protocol{
 		partitionConfig: partitionConfig,
 		protocolConfig:  protocolConfig,
@@ -44,7 +44,7 @@ func NewProtocol(partitionConfig *controller.PartitionConfig, protocolConfig *co
 // Protocol is an implementation of the Client interface providing the Raft consensus protocol
 type Protocol struct {
 	node.Protocol
-	partitionConfig *controller.PartitionConfig
+	partitionConfig *controller.ClusterConfig
 	protocolConfig  *config.ProtocolConfig
 	mu              sync.RWMutex
 	clients         map[int]*Partition

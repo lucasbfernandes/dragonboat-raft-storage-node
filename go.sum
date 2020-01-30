@@ -22,6 +22,9 @@ github.com/atomix/api v0.0.0-20200127101916-af75079e8faa h1:K3ebPXBMnTxxM5v/9OWZ
 github.com/atomix/api v0.0.0-20200127101916-af75079e8faa/go.mod h1:Ec7OEwfv1qGASdRZdXxi6TUvwmayT4IkkewDcm7pItI=
 github.com/atomix/api v0.0.0-20200127203446-04e1f5a64ca3 h1:bDuig57FGIQckqGF5kHv+FJu/qytuLKAPnLjokPMntc=
 github.com/atomix/api v0.0.0-20200127203446-04e1f5a64ca3/go.mod h1:Ec7OEwfv1qGASdRZdXxi6TUvwmayT4IkkewDcm7pItI=
+github.com/atomix/api v0.0.0-20200129205515-343e74c131fa h1:DXF6MVn9vSE2V17nN84et/puntdan/DE8Swtu48sGdM=
+github.com/atomix/api v0.0.0-20200130225951-1a2e0356dab7 h1:ygZeqH+G7VlGfecS6xxbus9PLz5qPmt+orgOz6CTwrM=
+github.com/atomix/api v0.0.0-20200130225951-1a2e0356dab7/go.mod h1:Ec7OEwfv1qGASdRZdXxi6TUvwmayT4IkkewDcm7pItI=
 github.com/atomix/atomix-api v0.0.0-20190826211343-dd8f4db3bf77/go.mod h1:joWKUd0zIeYbAQ0vmYHGsnV03ZgRalhceHgnJ3EN0mI=
 github.com/atomix/atomix-api v0.0.0-20191002225141-1ee9c98c7dfd/go.mod h1:joWKUd0zIeYbAQ0vmYHGsnV03ZgRalhceHgnJ3EN0mI=
 github.com/atomix/atomix-api v0.0.0-20191005223910-aa620357faa0/go.mod h1:joWKUd0zIeYbAQ0vmYHGsnV03ZgRalhceHgnJ3EN0mI=
@@ -87,6 +90,9 @@ github.com/atomix/go-framework v0.0.0-20200127190820-c52862338ab6 h1:Xn8osN+4Fjn
 github.com/atomix/go-framework v0.0.0-20200127190820-c52862338ab6/go.mod h1:1RNsxCHY/Gz0tKosk6/H6Bj9fEeUy20g/ob9jgZELRY=
 github.com/atomix/go-framework v0.0.0-20200127203639-933ae5cd47da h1:4JI6b7JWqcQlZt3ttKOyMptccq9G8cNJdx6jp+6/Qkw=
 github.com/atomix/go-framework v0.0.0-20200127203639-933ae5cd47da/go.mod h1:1fG7JvUkFvdm8FHl5kopjYqHFyrQLxB76VqYbG4Zwso=
+github.com/atomix/go-framework v0.0.0-20200129190409-bae967efb363 h1:1F2UzS42Qh25f0JuBYxOsViZpY6k2gn1clzL9JBUFJg=
+github.com/atomix/go-framework v0.0.0-20200130230758-ac26a7e123a2 h1:Ym+L1WyWYC57QwwG22dJ1S6iSZS+bY+plLMbJbjx84w=
+github.com/atomix/go-framework v0.0.0-20200130230758-ac26a7e123a2/go.mod h1:OBkilQ9uC8MozOPdX7cbUxLANrlOyOdxrSUBUCIVBYc=
 github.com/atomix/go-local v0.0.0-20200124003802-357f6682b2f4/go.mod h1:MabPkX/j2bN399GVAYGigyvDaAslu7omZoujEfzdKDg=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=

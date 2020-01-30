@@ -34,11 +34,11 @@ func main() {
 	log.SetOutput(os.Stdout)
 
 	nodeID := os.Args[1]
-	partitionConfig := parsePartitionConfig()
+	clusterConfig := parseClusterConfig()
 	protocolConfig := parseProtocolConfig()
 
 	// Start the node. The node will be started in its own goroutine.
-	node := atomix.NewNode(nodeID, partitionConfig, raft.NewProtocol(partitionConfig, protocolConfig), registry.Registry)
+	node := atomix.NewNode(nodeID, clusterConfig, raft.NewProtocol(clusterConfig, protocolConfig), registry.Registry)
 	if err := node.Start(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -56,9 +56,9 @@ func main() {
 	}
 }
 
-func parsePartitionConfig() *controller.PartitionConfig {
+func parseClusterConfig() *controller.ClusterConfig {
 	nodeConfigFile := os.Args[2]
-	nodeConfig := &controller.PartitionConfig{}
+	nodeConfig := &controller.ClusterConfig{}
 	nodeBytes, err := ioutil.ReadFile(nodeConfigFile)
 	if err != nil {
 		fmt.Println(err)
