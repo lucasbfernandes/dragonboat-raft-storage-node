@@ -79,9 +79,11 @@ func parseProtocolConfig() *config.ProtocolConfig {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+	if len(protocolBytes) == 0 {
+		return protocolConfig
+	}
 	if err := jsonpb.Unmarshal(bytes.NewReader(protocolBytes), protocolConfig); err != nil {
 		fmt.Println(err)
-		os.Exit(1)
 	}
 	return protocolConfig
 }

@@ -3,9 +3,9 @@ module github.com/atomix/dragonboat-raft-replica
 go 1.12
 
 require (
-	github.com/atomix/api v0.0.0-20200130225951-1a2e0356dab7
+	github.com/atomix/api v0.0.0-20200202100958-13b24edbe32d
 	github.com/atomix/atomix-go-client v0.0.0-20200114212658-58c359bc47b1 // indirect
-	github.com/atomix/go-framework v0.0.0-20200130230758-ac26a7e123a2
+	github.com/atomix/go-framework v0.0.0-20200202102454-440bc2678f1c
 	github.com/cockroachdb/pebble v0.0.0-20200124143148-ea43a1af0543 // indirect
 	github.com/gogo/protobuf v1.3.1
 	github.com/lni/dragonboat/v3 v3.1.5
