@@ -32,7 +32,7 @@ func newStateMachine(cluster cluster.Cluster, registry *node.Registry, streams *
 		node:    cluster.MemberID,
 		streams: streams,
 	}
-	fsm.state = node.NewPrimitiveStateMachine(registry, fsm)
+	fsm.state = service.NewManager(registry, fsm)
 	return fsm
 }
 
@@ -42,7 +42,6 @@ type StateMachine struct {
 	streams   *streamManager
 	index     uint64
 	timestamp time.Time
-	operation service.OperationType
 }
 
 func (s *StateMachine) Node() string {
@@ -57,13 +56,7 @@ func (s *StateMachine) Timestamp() time.Time {
 	return s.timestamp
 }
 
-func (s *StateMachine) OperationType() service.OperationType {
-	return s.operation
-}
-
 func (s *StateMachine) Update(bytes []byte) (statemachine.Result, error) {
-	s.operation = service.OpTypeCommand
-
 	tsEntry := &Entry{}
 	if err := proto.Unmarshal(bytes, tsEntry); err != nil {
 		return statemachine.Result{}, err
@@ -75,20 +68,17 @@ func (s *StateMachine) Update(bytes []byte) (statemachine.Result, error) {
 	if tsEntry.Timestamp.After(s.timestamp) {
 		s.timestamp = tsEntry.Timestamp
 	}
-	s.operation = service.OpTypeCommand
 	s.state.Command(tsEntry.Value, stream)
 	return statemachine.Result{}, nil
 }
 
 func (s *StateMachine) Lookup(value interface{}) (interface{}, error) {
-	s.operation = service.OpTypeQuery
 	query := value.(queryContext)
 	s.state.Query(query.value, query.stream)
 	return nil, nil
 }
 
 func (s *StateMachine) SaveSnapshot(writer io.Writer, files statemachine.ISnapshotFileCollection, done <-chan struct{}) error {
-	s.operation = service.OpTypeCommand
 	bytes := make([]byte, 8)
 	binary.BigEndian.PutUint64(bytes, s.index)
 	if _, err := writer.Write(bytes); err != nil {
@@ -106,7 +96,6 @@ func (s *StateMachine) SaveSnapshot(writer io.Writer, files statemachine.ISnapsh
 }
 
 func (s *StateMachine) RecoverFromSnapshot(reader io.Reader, files []statemachine.SnapshotFile, done <-chan struct{}) error {
-	s.operation = service.OpTypeCommand
 	bytes := make([]byte, 8)
 	if _, err := reader.Read(bytes); err != nil {
 		return err
