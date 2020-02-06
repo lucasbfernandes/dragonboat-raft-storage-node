@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/atomix/api v0.0.0-20200206211058-f075fb5b6d1b
-	github.com/atomix/go-framework v0.0.0-20200206211522-7019b65dabc0
+	github.com/atomix/go-framework v0.0.0-20200206221034-8c7583e55420
 	github.com/cockroachdb/pebble v0.0.0-20200124143148-ea43a1af0543 // indirect
 	github.com/gogo/protobuf v1.3.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.1.0 // indirect
