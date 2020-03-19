@@ -23,6 +23,7 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"github.com/lni/dragonboat/v3/statemachine"
 	"io"
+	"sync"
 	"time"
 )
 
@@ -42,6 +43,7 @@ type StateMachine struct {
 	streams   *streamManager
 	index     uint64
 	timestamp time.Time
+	mu        sync.Mutex
 }
 
 func (s *StateMachine) Node() string {
@@ -57,6 +59,9 @@ func (s *StateMachine) Timestamp() time.Time {
 }
 
 func (s *StateMachine) Update(bytes []byte) (statemachine.Result, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	tsEntry := &Entry{}
 	if err := proto.Unmarshal(bytes, tsEntry); err != nil {
 		return statemachine.Result{}, err
@@ -73,12 +78,17 @@ func (s *StateMachine) Update(bytes []byte) (statemachine.Result, error) {
 }
 
 func (s *StateMachine) Lookup(value interface{}) (interface{}, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	query := value.(queryContext)
 	s.state.Query(query.value, query.stream)
 	return nil, nil
 }
 
 func (s *StateMachine) SaveSnapshot(writer io.Writer, files statemachine.ISnapshotFileCollection, done <-chan struct{}) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	bytes := make([]byte, 8)
 	binary.BigEndian.PutUint64(bytes, s.index)
 	if _, err := writer.Write(bytes); err != nil {
@@ -96,6 +106,9 @@ func (s *StateMachine) SaveSnapshot(writer io.Writer, files statemachine.ISnapsh
 }
 
 func (s *StateMachine) RecoverFromSnapshot(reader io.Reader, files []statemachine.SnapshotFile, done <-chan struct{}) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	bytes := make([]byte, 8)
 	if _, err := reader.Read(bytes); err != nil {
 		return err
