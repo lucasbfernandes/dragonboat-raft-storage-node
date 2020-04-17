@@ -31,3 +31,10 @@ jobs:
     - stage: test
       script:
         - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then bash ./build/bin/push-images; fi'
+
+deploy:
+  provider: script
+  script: VERSION=$TRAVIS_TAG ./build/bin/push-images
+  on:
+    tags: true
+    all_branches: true
