@@ -25,12 +25,12 @@ RUN go get -u google.golang.org/grpc
 
 ENV GO111MODULE=on
 
-COPY Makefile go.mod go.sum /go/src/github.com/atomix/dragonboat-raft-replica/
-COPY vendor/ /go/src/github.com/atomix/dragonboat-raft-replica/vendor/
-COPY pkg/ /go/src/github.com/atomix/dragonboat-raft-replica/pkg/
-COPY cmd/ /go/src/github.com/atomix/dragonboat-raft-replica/cmd/
+COPY Makefile go.mod go.sum /go/src/github.com/atomix/dragonboat-raft-storage/
+COPY vendor/ /go/src/github.com/atomix/dragonboat-raft-storage/vendor/
+COPY pkg/ /go/src/github.com/atomix/dragonboat-raft-storage/pkg/
+COPY cmd/ /go/src/github.com/atomix/dragonboat-raft-storage/cmd/
 
-RUN cd /go/src/github.com/atomix/dragonboat-raft-replica && make
+RUN cd /go/src/github.com/atomix/dragonboat-raft-storage && make
 
 FROM ubuntu:18.04
 
@@ -38,6 +38,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   librocksdb-dev \
   && rm -rf /var/lib/apt/lists/*
 
-COPY --from=build /go/src/github.com/atomix/dragonboat-raft-replica/build/_output/dragonboat-raft-replica /usr/local/bin/dragonboat-raft-replica
+COPY --from=build /go/src/github.com/atomix/dragonboat-raft-storage/build/_output/raft-storage-node /usr/local/bin/raft-storage-node
 
-ENTRYPOINT ["dragonboat-raft-replica"]
+ENTRYPOINT ["raft-storage-node"]

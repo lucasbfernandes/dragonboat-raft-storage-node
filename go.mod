@@ -1,4 +1,4 @@
-module github.com/atomix/dragonboat-raft-replica
+module github.com/atomix/dragonboat-raft-storage
 
 go 1.12
 
