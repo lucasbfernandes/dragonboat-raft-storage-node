@@ -3,8 +3,9 @@ module github.com/atomix/dragonboat-raft-storage
 go 1.12
 
 require (
-	github.com/atomix/api v0.0.0-20200211005812-591fe8b07ea8
-	github.com/atomix/go-framework v0.0.0-20200326224656-5401b72ffe96
+	github.com/atomix/api v0.2.0
+	github.com/atomix/go-client v0.0.0-20200211010855-927b10345735 // indirect
+	github.com/atomix/go-framework v0.2.0
 	github.com/cockroachdb/pebble v0.0.0-20200124143148-ea43a1af0543 // indirect
 	github.com/gogo/protobuf v1.3.1
 	github.com/lni/dragonboat/v3 v3.1.5
