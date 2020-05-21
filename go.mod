@@ -3,6 +3,7 @@ module github.com/atomix/dragonboat-raft-storage
 go 1.12
 
 require (
+	git.apache.org/thrift.git v0.13.0 // indirect
 	github.com/atomix/api v0.2.0
 	github.com/atomix/go-client v0.0.0-20200211010855-927b10345735 // indirect
 	github.com/atomix/go-framework v0.2.0

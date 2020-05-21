@@ -16,7 +16,7 @@ package raft
 
 import (
 	"fmt"
-	"github.com/atomix/api/proto/atomix/controller"
+	"github.com/atomix/api/proto/atomix/database"
 	"github.com/atomix/dragonboat-raft-storage/pkg/atomix/raft/config"
 	"github.com/atomix/go-framework/pkg/atomix/cluster"
 	"github.com/atomix/go-framework/pkg/atomix/node"
@@ -32,7 +32,7 @@ const dataDir = "/var/lib/atomix/data"
 const rttMillisecond = 200
 
 // NewProtocol returns a new Raft Protocol instance
-func NewProtocol(partitionConfig *controller.ClusterConfig, protocolConfig *config.ProtocolConfig) *Protocol {
+func NewProtocol(partitionConfig *database.DatabaseConfig, protocolConfig *config.ProtocolConfig) *Protocol {
 	return &Protocol{
 		partitionConfig: partitionConfig,
 		protocolConfig:  protocolConfig,
@@ -44,7 +44,7 @@ func NewProtocol(partitionConfig *controller.ClusterConfig, protocolConfig *conf
 // Protocol is an implementation of the Client interface providing the Raft consensus protocol
 type Protocol struct {
 	node.Protocol
-	partitionConfig *controller.ClusterConfig
+	partitionConfig *database.DatabaseConfig
 	protocolConfig  *config.ProtocolConfig
 	mu              sync.RWMutex
 	clients         map[int]*Partition

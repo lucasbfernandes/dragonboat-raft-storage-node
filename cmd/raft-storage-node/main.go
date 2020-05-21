@@ -17,7 +17,7 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/atomix/api/proto/atomix/controller"
+	"github.com/atomix/api/proto/atomix/database"
 	"github.com/atomix/dragonboat-raft-storage/pkg/atomix/raft"
 	"github.com/atomix/dragonboat-raft-storage/pkg/atomix/raft/config"
 	"github.com/atomix/go-framework/pkg/atomix"
@@ -56,9 +56,9 @@ func main() {
 	}
 }
 
-func parseClusterConfig() *controller.ClusterConfig {
+func parseClusterConfig() *database.DatabaseConfig {
 	nodeConfigFile := os.Args[2]
-	nodeConfig := &controller.ClusterConfig{}
+	nodeConfig := &database.DatabaseConfig{}
 	nodeBytes, err := ioutil.ReadFile(nodeConfigFile)
 	if err != nil {
 		fmt.Println(err)
