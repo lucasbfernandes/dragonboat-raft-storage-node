@@ -17,8 +17,7 @@ package raft
 import (
 	"encoding/binary"
 	"github.com/atomix/go-framework/pkg/atomix/cluster"
-	"github.com/atomix/go-framework/pkg/atomix/node"
-	"github.com/atomix/go-framework/pkg/atomix/service"
+	"github.com/atomix/go-framework/pkg/atomix/primitive"
 	"github.com/atomix/go-framework/pkg/atomix/stream"
 	"github.com/gogo/protobuf/proto"
 	"github.com/lni/dragonboat/v3/statemachine"
@@ -28,18 +27,18 @@ import (
 )
 
 // newStateMachine returns a new primitive state machine
-func newStateMachine(cluster cluster.Cluster, registry *node.Registry, streams *streamManager) *StateMachine {
+func newStateMachine(cluster cluster.Cluster, registry primitive.Registry, streams *streamManager) *StateMachine {
 	fsm := &StateMachine{
 		node:    cluster.MemberID,
 		streams: streams,
 	}
-	fsm.state = service.NewManager(registry, fsm)
+	fsm.state = primitive.NewManager(registry, fsm)
 	return fsm
 }
 
 type StateMachine struct {
 	node      string
-	state     node.StateMachine
+	state     *primitive.Manager
 	streams   *streamManager
 	index     uint64
 	timestamp time.Time

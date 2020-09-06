@@ -21,7 +21,15 @@ import (
 	"github.com/atomix/dragonboat-raft-storage/pkg/atomix/raft"
 	"github.com/atomix/dragonboat-raft-storage/pkg/atomix/raft/config"
 	"github.com/atomix/go-framework/pkg/atomix"
-	"github.com/atomix/go-framework/pkg/atomix/registry"
+	"github.com/atomix/go-framework/pkg/atomix/counter"
+	"github.com/atomix/go-framework/pkg/atomix/election"
+	"github.com/atomix/go-framework/pkg/atomix/indexedmap"
+	"github.com/atomix/go-framework/pkg/atomix/leader"
+	"github.com/atomix/go-framework/pkg/atomix/list"
+	logprimitive "github.com/atomix/go-framework/pkg/atomix/log"
+	"github.com/atomix/go-framework/pkg/atomix/map"
+	"github.com/atomix/go-framework/pkg/atomix/set"
+	"github.com/atomix/go-framework/pkg/atomix/value"
 	"github.com/gogo/protobuf/jsonpb"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
@@ -37,8 +45,21 @@ func main() {
 	clusterConfig := parseClusterConfig()
 	protocolConfig := parseProtocolConfig()
 
-	// Start the node. The node will be started in its own goroutine.
-	node := atomix.NewNode(nodeID, clusterConfig, raft.NewProtocol(clusterConfig, protocolConfig), registry.Registry)
+	// Create an Atomix node
+	node := atomix.NewNode(nodeID, clusterConfig, raft.NewProtocol(clusterConfig, protocolConfig))
+
+	// Register primitives on the Atomix node
+	counter.RegisterPrimitive(node)
+	election.RegisterPrimitive(node)
+	indexedmap.RegisterPrimitive(node)
+	logprimitive.RegisterPrimitive(node)
+	leader.RegisterPrimitive(node)
+	list.RegisterPrimitive(node)
+	_map.RegisterPrimitive(node)
+	set.RegisterPrimitive(node)
+	value.RegisterPrimitive(node)
+
+	// Start the node
 	if err := node.Start(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)

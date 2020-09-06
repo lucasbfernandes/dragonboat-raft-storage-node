@@ -19,7 +19,7 @@ import (
 	"github.com/atomix/api/proto/atomix/database"
 	"github.com/atomix/dragonboat-raft-storage/pkg/atomix/raft/config"
 	"github.com/atomix/go-framework/pkg/atomix/cluster"
-	"github.com/atomix/go-framework/pkg/atomix/node"
+	"github.com/atomix/go-framework/pkg/atomix/primitive"
 	"github.com/lni/dragonboat/v3"
 	raftconfig "github.com/lni/dragonboat/v3/config"
 	"github.com/lni/dragonboat/v3/raftio"
@@ -43,7 +43,7 @@ func NewProtocol(partitionConfig *database.DatabaseConfig, protocolConfig *confi
 
 // Protocol is an implementation of the Client interface providing the Raft consensus protocol
 type Protocol struct {
-	node.Protocol
+	primitive.Protocol
 	partitionConfig *database.DatabaseConfig
 	protocolConfig  *config.ProtocolConfig
 	mu              sync.RWMutex
@@ -72,7 +72,7 @@ func (l *startupListener) close() {
 }
 
 // Start starts the Raft protocol
-func (p *Protocol) Start(clusterConfig cluster.Cluster, registry *node.Registry) error {
+func (p *Protocol) Start(clusterConfig cluster.Cluster, registry primitive.Registry) error {
 	member := clusterConfig.Members[clusterConfig.MemberID]
 	address := fmt.Sprintf("%s:%d", member.Host, member.ProtocolPort)
 
@@ -153,17 +153,17 @@ func (p *Protocol) Start(clusterConfig cluster.Cluster, registry *node.Registry)
 }
 
 // Partition returns the given partition client
-func (p *Protocol) Partition(partitionID int) node.Partition {
+func (p *Protocol) Partition(partitionID int) primitive.Partition {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 	return p.clients[partitionID]
 }
 
 // Partitions returns all partition clients
-func (p *Protocol) Partitions() []node.Partition {
+func (p *Protocol) Partitions() []primitive.Partition {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
-	partitions := make([]node.Partition, 0, len(p.clients))
+	partitions := make([]primitive.Partition, 0, len(p.clients))
 	for _, client := range p.clients {
 		partitions = append(partitions, client)
 	}
