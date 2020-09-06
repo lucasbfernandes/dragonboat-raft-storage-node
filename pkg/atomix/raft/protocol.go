@@ -36,8 +36,8 @@ func NewProtocol(partitionConfig *database.DatabaseConfig, protocolConfig *confi
 	return &Protocol{
 		partitionConfig: partitionConfig,
 		protocolConfig:  protocolConfig,
-		clients:         make(map[int]*Partition),
-		servers:         make(map[int]*Server),
+		clients:         make(map[primitive.PartitionID]*Partition),
+		servers:         make(map[primitive.PartitionID]*Server),
 	}
 }
 
@@ -47,8 +47,8 @@ type Protocol struct {
 	partitionConfig *database.DatabaseConfig
 	protocolConfig  *config.ProtocolConfig
 	mu              sync.RWMutex
-	clients         map[int]*Partition
-	servers         map[int]*Server
+	clients         map[primitive.PartitionID]*Partition
+	servers         map[primitive.PartitionID]*Server
 }
 
 type startupListener struct {
@@ -116,9 +116,9 @@ func (p *Protocol) Start(clusterConfig cluster.Cluster, registry primitive.Regis
 
 	fsmFactory := func(clusterID, nodeID uint64) statemachine.IStateMachine {
 		streams := newStreamManager()
-		fsm := newStateMachine(clusterConfig, registry, streams)
+		fsm := newStateMachine(clusterConfig, primitive.PartitionID(clusterID), registry, streams)
 		p.mu.Lock()
-		p.clients[int(clusterID)] = newClient(clusterID, nodeID, node, clientMembers, streams)
+		p.clients[primitive.PartitionID(clusterID)] = newClient(clusterID, nodeID, node, clientMembers, streams)
 		p.mu.Unlock()
 		return fsm
 	}
@@ -138,7 +138,7 @@ func (p *Protocol) Start(clusterConfig cluster.Cluster, registry primitive.Regis
 		if err := server.Start(); err != nil {
 			return err
 		}
-		p.servers[int(partition.Partition)] = server
+		p.servers[primitive.PartitionID(partition.Partition)] = server
 	}
 
 	started := make(map[int]bool)
@@ -153,7 +153,7 @@ func (p *Protocol) Start(clusterConfig cluster.Cluster, registry primitive.Regis
 }
 
 // Partition returns the given partition client
-func (p *Protocol) Partition(partitionID int) primitive.Partition {
+func (p *Protocol) Partition(partitionID primitive.PartitionID) primitive.Partition {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 	return p.clients[partitionID]

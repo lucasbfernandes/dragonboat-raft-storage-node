@@ -27,10 +27,11 @@ import (
 )
 
 // newStateMachine returns a new primitive state machine
-func newStateMachine(cluster cluster.Cluster, registry primitive.Registry, streams *streamManager) *StateMachine {
+func newStateMachine(cluster cluster.Cluster, partitionID primitive.PartitionID, registry primitive.Registry, streams *streamManager) *StateMachine {
 	fsm := &StateMachine{
-		node:    cluster.MemberID,
-		streams: streams,
+		node:      cluster.MemberID,
+		partition: partitionID,
+		streams:   streams,
 	}
 	fsm.state = primitive.NewManager(registry, fsm)
 	return fsm
@@ -38,6 +39,7 @@ func newStateMachine(cluster cluster.Cluster, registry primitive.Registry, strea
 
 type StateMachine struct {
 	node      string
+	partition primitive.PartitionID
 	state     *primitive.Manager
 	streams   *streamManager
 	index     uint64
@@ -45,8 +47,12 @@ type StateMachine struct {
 	mu        sync.Mutex
 }
 
-func (s *StateMachine) Node() string {
+func (s *StateMachine) NodeID() string {
 	return s.node
+}
+
+func (s *StateMachine) PartitionID() primitive.PartitionID {
+	return s.partition
 }
 
 func (s *StateMachine) Index() uint64 {
