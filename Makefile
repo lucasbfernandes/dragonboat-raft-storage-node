@@ -73,7 +73,7 @@ proto:
 		--entrypoint build/bin/compile_protos.sh \
 		onosproject/protoc-go:stable
 
-images: # @HELP build raft-storage-node Docker image
+image: # @HELP build raft-storage-node Docker image
 	@go mod vendor
 	docker build . -f build/raft-storage-node/Dockerfile -t atomix/raft-storage-node:${RAFT_STORAGE_NODE_VERSION}
 	@rm -r vendor
