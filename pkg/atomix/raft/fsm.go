@@ -42,7 +42,7 @@ type StateMachine struct {
 	partition primitive.PartitionID
 	state     *primitive.Manager
 	streams   *streamManager
-	index     uint64
+	index     primitive.Index
 	timestamp time.Time
 	mu        sync.Mutex
 }
@@ -55,7 +55,7 @@ func (s *StateMachine) PartitionID() primitive.PartitionID {
 	return s.partition
 }
 
-func (s *StateMachine) Index() uint64 {
+func (s *StateMachine) Index() primitive.Index {
 	return s.index
 }
 
@@ -95,7 +95,7 @@ func (s *StateMachine) SaveSnapshot(writer io.Writer, files statemachine.ISnapsh
 	defer s.mu.Unlock()
 
 	bytes := make([]byte, 8)
-	binary.BigEndian.PutUint64(bytes, s.index)
+	binary.BigEndian.PutUint64(bytes, uint64(s.index))
 	if _, err := writer.Write(bytes); err != nil {
 		return err
 	}
@@ -118,7 +118,7 @@ func (s *StateMachine) RecoverFromSnapshot(reader io.Reader, files []statemachin
 	if _, err := reader.Read(bytes); err != nil {
 		return err
 	}
-	s.index = binary.BigEndian.Uint64(bytes)
+	s.index = primitive.Index(binary.BigEndian.Uint64(bytes))
 	if _, err := reader.Read(bytes); err != nil {
 		return err
 	}
