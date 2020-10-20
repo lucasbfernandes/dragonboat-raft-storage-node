@@ -1,4 +1,4 @@
-module github.com/atomix/dragonboat-raft-storage
+module github.com/atomix/dragonboat-raft-storage-node
 
 go 1.12
 

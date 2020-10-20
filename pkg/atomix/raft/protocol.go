@@ -17,7 +17,7 @@ package raft
 import (
 	"fmt"
 	"github.com/atomix/api/proto/atomix/database"
-	"github.com/atomix/dragonboat-raft-storage/pkg/atomix/raft/config"
+	"github.com/atomix/dragonboat-raft-storage-node/pkg/atomix/raft/config"
 	"github.com/atomix/go-framework/pkg/atomix/cluster"
 	"github.com/atomix/go-framework/pkg/atomix/primitive"
 	"github.com/lni/dragonboat/v3"

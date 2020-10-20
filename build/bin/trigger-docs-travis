@@ -1,5 +1,5 @@
 TRAVIS_API_TOKEN=$1
-MESSAGE=",\"message\": \"Triggered by upstream build of atomix/dragonboat-raft-storage commit "`git rev-parse --short HEAD`"\""
+MESSAGE=",\"message\": \"Triggered by upstream build of atomix/dragonboat-raft-storage-node commit "`git rev-parse --short HEAD`"\""
 BRANCH="master"
 body="{
 \"request\": {
