@@ -38,6 +38,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   librocksdb-dev \
   && rm -rf /var/lib/apt/lists/*
 
-COPY --from=build /go/src/github.com/atomix/dragonboat-raft-storage-node/build/_output/raft-storage-node /usr/local/bin/raft-storage-node
+COPY --from=build /go/src/github.com/atomix/dragonboat-raft-storage-node/build/_output/dragonboat-raft-storage-node /usr/local/bin/dragonboat-raft-storage-node
 
 ENTRYPOINT ["dragonboat-raft-storage-node"]
