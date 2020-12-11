@@ -69,6 +69,7 @@ func (l *startupListener) close() {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	l.done = true
+	close(l.ch)
 }
 
 // Start starts the Raft protocol
@@ -141,14 +142,20 @@ func (p *Protocol) Start(clusterConfig cluster.Cluster, registry primitive.Regis
 		p.servers[primitive.PartitionID(partition.Partition)] = server
 	}
 
-	started := make(map[int]bool)
-	for partitionID := range startupCh {
-		started[partitionID] = true
-		if len(started) == len(p.servers) {
-			listener.close()
-			return nil
+	startedCh := make(chan struct{})
+	go func() {
+		startedPartitions := make(map[int]bool)
+		started := false
+		for partitionID := range startupCh {
+			startedPartitions[partitionID] = true
+			if !started && len(startedPartitions) == len(p.servers) {
+				go listener.close()
+				close(startedCh)
+				started = true
+			}
 		}
-	}
+	}()
+	<-startedCh
 	return nil
 }
 
