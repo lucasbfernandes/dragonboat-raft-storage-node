@@ -14,6 +14,7 @@ all: build
 build: # @HELP build the source code
 build:
 	GOOS=linux GOARCH=amd64 go build -o build/_output/dragonboat-raft-storage-node ./cmd/dragonboat-raft-storage-node
+	GOOS=linux GOARCH=amd64 go build -o build/_output/dragonboat-raft-storage-proxy ./cmd/dragonboat-raft-storage-proxy
 
 test: # @HELP run the unit tests and source code validation
 test: build license_check linters
@@ -40,9 +41,11 @@ proto:
 image: # @HELP build etcd-raft-replica Docker image
 image: build
 	docker build . -f build/dragonboat-raft-storage-node/Dockerfile -t atomix/dragonboat-raft-storage-node:${RAFT_STORAGE_NODE_VERSION}
+	docker build . -f build/dragonboat-raft-storage-proxy/Dockerfile -t atomix/dragonboat-raft-storage-proxy:${RAFT_STORAGE_NODE_VERSION}
 
 clean: # @HELP clean build files
 	@rm -rf vendor build/_output
 
 push: # @HELP push dragonboat-raft-storage-node Docker image
 	docker push atomix/dragonboat-raft-storage-node:${RAFT_STORAGE_NODE_VERSION}
+	docker push atomix/dragonboat-raft-storage-proxy:${RAFT_STORAGE_NODE_VERSION}

@@ -18,8 +18,6 @@ import (
 	"bytes"
 	"fmt"
 	storageapi "github.com/atomix/api/go/atomix/storage"
-	raft "github.com/atomix/dragonboat-raft-storage-node/pkg/storage"
-	"github.com/atomix/dragonboat-raft-storage-node/pkg/storage/config"
 	"github.com/atomix/go-framework/pkg/atomix/counter"
 	"github.com/atomix/go-framework/pkg/atomix/election"
 	"github.com/atomix/go-framework/pkg/atomix/indexedmap"
@@ -28,8 +26,8 @@ import (
 	"github.com/atomix/go-framework/pkg/atomix/lock"
 	logprimitive "github.com/atomix/go-framework/pkg/atomix/log"
 	"github.com/atomix/go-framework/pkg/atomix/map"
+	"github.com/atomix/go-framework/pkg/atomix/proxy"
 	"github.com/atomix/go-framework/pkg/atomix/set"
-	"github.com/atomix/go-framework/pkg/atomix/storage"
 	"github.com/atomix/go-framework/pkg/atomix/value"
 	"github.com/gogo/protobuf/jsonpb"
 	log "github.com/sirupsen/logrus"
@@ -44,22 +42,21 @@ func main() {
 
 	nodeID := os.Args[1]
 	storageConfig := parseStorageConfig()
-	protocolConfig := parseProtocolConfig()
 
 	// Create an Atomix node
-	node := storage.NewNode(nodeID, storageConfig, raft.NewProtocol(storageConfig, protocolConfig))
+	node := proxy.NewNode(nodeID, storageConfig)
 
 	// Register primitives on the Atomix node
-	counter.RegisterService(node)
-	election.RegisterService(node)
-	indexedmap.RegisterService(node)
-	lock.RegisterService(node)
-	logprimitive.RegisterService(node)
-	leader.RegisterService(node)
-	list.RegisterService(node)
-	_map.RegisterService(node)
-	set.RegisterService(node)
-	value.RegisterService(node)
+	counter.RegisterServer(node)
+	election.RegisterServer(node)
+	indexedmap.RegisterServer(node)
+	lock.RegisterServer(node)
+	logprimitive.RegisterServer(node)
+	leader.RegisterServer(node)
+	list.RegisterServer(node)
+	_map.RegisterServer(node)
+	set.RegisterServer(node)
+	value.RegisterServer(node)
 
 	// Start the node
 	if err := node.Start(); err != nil {
@@ -92,21 +89,4 @@ func parseStorageConfig() storageapi.StorageConfig {
 		os.Exit(1)
 	}
 	return storageConfig
-}
-
-func parseProtocolConfig() config.ProtocolConfig {
-	protocolConfigFile := os.Args[3]
-	protocolConfig := config.ProtocolConfig{}
-	protocolBytes, err := ioutil.ReadFile(protocolConfigFile)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	if len(protocolBytes) == 0 {
-		return protocolConfig
-	}
-	if err := jsonpb.Unmarshal(bytes.NewReader(protocolBytes), &protocolConfig); err != nil {
-		fmt.Println(err)
-	}
-	return protocolConfig
 }

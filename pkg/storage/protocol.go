@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package raft
+package storage
 
 import (
 	"fmt"
 	storageapi "github.com/atomix/api/go/atomix/storage"
-	"github.com/atomix/dragonboat-raft-storage-node/pkg/atomix/raft/config"
+	"github.com/atomix/dragonboat-raft-storage-node/pkg/storage/config"
 	"github.com/atomix/go-framework/pkg/atomix/cluster"
 	"github.com/atomix/go-framework/pkg/atomix/storage"
 	"github.com/lni/dragonboat/v3"
