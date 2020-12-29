@@ -16,6 +16,7 @@ package raft
 
 import (
 	"context"
+	"github.com/atomix/go-framework/pkg/atomix/storage"
 	streams "github.com/atomix/go-framework/pkg/atomix/stream"
 	"github.com/gogo/protobuf/proto"
 	"github.com/lni/dragonboat/v3"
@@ -64,7 +65,7 @@ func (c *Partition) Leader() string {
 	return c.members[leader]
 }
 
-func (c *Partition) Write(ctx context.Context, input []byte, stream streams.WriteStream) error {
+func (c *Partition) ExecuteCommand(ctx context.Context, input []byte, stream streams.WriteStream) error {
 	streamID, stream := c.streams.addStream(stream)
 	entry := &Entry{
 		Value:     input,
@@ -84,7 +85,7 @@ func (c *Partition) Write(ctx context.Context, input []byte, stream streams.Writ
 	return nil
 }
 
-func (c *Partition) Read(ctx context.Context, input []byte, stream streams.WriteStream) error {
+func (c *Partition) ExecuteQuery(ctx context.Context, input []byte, stream streams.WriteStream) error {
 	query := queryContext{
 		value:  input,
 		stream: stream,
@@ -97,3 +98,5 @@ func (c *Partition) Read(ctx context.Context, input []byte, stream streams.Write
 	}
 	return nil
 }
+
+var _ storage.Partition = &Partition{}

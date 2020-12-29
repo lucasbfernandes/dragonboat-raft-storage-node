@@ -17,10 +17,9 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/atomix/api/proto/atomix/database"
+	storageapi "github.com/atomix/api/go/atomix/storage"
 	"github.com/atomix/dragonboat-raft-storage-node/pkg/atomix/raft"
 	"github.com/atomix/dragonboat-raft-storage-node/pkg/atomix/raft/config"
-	"github.com/atomix/go-framework/pkg/atomix"
 	"github.com/atomix/go-framework/pkg/atomix/counter"
 	"github.com/atomix/go-framework/pkg/atomix/election"
 	"github.com/atomix/go-framework/pkg/atomix/indexedmap"
@@ -30,6 +29,7 @@ import (
 	logprimitive "github.com/atomix/go-framework/pkg/atomix/log"
 	"github.com/atomix/go-framework/pkg/atomix/map"
 	"github.com/atomix/go-framework/pkg/atomix/set"
+	"github.com/atomix/go-framework/pkg/atomix/storage"
 	"github.com/atomix/go-framework/pkg/atomix/value"
 	"github.com/gogo/protobuf/jsonpb"
 	log "github.com/sirupsen/logrus"
@@ -43,23 +43,23 @@ func main() {
 	log.SetOutput(os.Stdout)
 
 	nodeID := os.Args[1]
-	clusterConfig := parseClusterConfig()
+	storageConfig := parseStorageConfig()
 	protocolConfig := parseProtocolConfig()
 
 	// Create an Atomix node
-	node := atomix.NewNode(nodeID, clusterConfig, raft.NewProtocol(clusterConfig, protocolConfig))
+	node := storage.NewNode(nodeID, storageConfig, raft.NewProtocol(storageConfig, protocolConfig))
 
 	// Register primitives on the Atomix node
-	counter.RegisterPrimitive(node)
-	election.RegisterPrimitive(node)
-	indexedmap.RegisterPrimitive(node)
-	lock.RegisterPrimitive(node)
-	logprimitive.RegisterPrimitive(node)
-	leader.RegisterPrimitive(node)
-	list.RegisterPrimitive(node)
-	_map.RegisterPrimitive(node)
-	set.RegisterPrimitive(node)
-	value.RegisterPrimitive(node)
+	counter.RegisterService(node)
+	election.RegisterService(node)
+	indexedmap.RegisterService(node)
+	lock.RegisterService(node)
+	logprimitive.RegisterService(node)
+	leader.RegisterService(node)
+	list.RegisterService(node)
+	_map.RegisterService(node)
+	set.RegisterService(node)
+	value.RegisterService(node)
 
 	// Start the node
 	if err := node.Start(); err != nil {
@@ -79,24 +79,24 @@ func main() {
 	}
 }
 
-func parseClusterConfig() *database.DatabaseConfig {
-	nodeConfigFile := os.Args[2]
-	nodeConfig := &database.DatabaseConfig{}
-	nodeBytes, err := ioutil.ReadFile(nodeConfigFile)
+func parseStorageConfig() storageapi.StorageConfig {
+	storageConfigFile := os.Args[2]
+	storageConfig := storageapi.StorageConfig{}
+	nodeBytes, err := ioutil.ReadFile(storageConfigFile)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	if err := jsonpb.Unmarshal(bytes.NewReader(nodeBytes), nodeConfig); err != nil {
+	if err := jsonpb.Unmarshal(bytes.NewReader(nodeBytes), &storageConfig); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	return nodeConfig
+	return storageConfig
 }
 
-func parseProtocolConfig() *config.ProtocolConfig {
+func parseProtocolConfig() config.ProtocolConfig {
 	protocolConfigFile := os.Args[3]
-	protocolConfig := &config.ProtocolConfig{}
+	protocolConfig := config.ProtocolConfig{}
 	protocolBytes, err := ioutil.ReadFile(protocolConfigFile)
 	if err != nil {
 		fmt.Println(err)
@@ -105,7 +105,7 @@ func parseProtocolConfig() *config.ProtocolConfig {
 	if len(protocolBytes) == 0 {
 		return protocolConfig
 	}
-	if err := jsonpb.Unmarshal(bytes.NewReader(protocolBytes), protocolConfig); err != nil {
+	if err := jsonpb.Unmarshal(bytes.NewReader(protocolBytes), &protocolConfig); err != nil {
 		fmt.Println(err)
 	}
 	return protocolConfig

@@ -17,7 +17,7 @@ package raft
 import (
 	"encoding/binary"
 	"github.com/atomix/go-framework/pkg/atomix/cluster"
-	"github.com/atomix/go-framework/pkg/atomix/primitive"
+	"github.com/atomix/go-framework/pkg/atomix/storage"
 	"github.com/atomix/go-framework/pkg/atomix/stream"
 	"github.com/gogo/protobuf/proto"
 	"github.com/lni/dragonboat/v3/statemachine"
@@ -27,22 +27,22 @@ import (
 )
 
 // newStateMachine returns a new primitive state machine
-func newStateMachine(cluster cluster.Cluster, partitionID primitive.PartitionID, registry primitive.Registry, streams *streamManager) *StateMachine {
+func newStateMachine(cluster cluster.Cluster, partitionID storage.PartitionID, registry storage.Registry, streams *streamManager) *StateMachine {
 	fsm := &StateMachine{
 		node:      cluster.MemberID,
 		partition: partitionID,
 		streams:   streams,
 	}
-	fsm.state = primitive.NewManager(registry, fsm)
+	fsm.state = storage.NewManager(registry, fsm)
 	return fsm
 }
 
 type StateMachine struct {
 	node      string
-	partition primitive.PartitionID
-	state     *primitive.Manager
+	partition storage.PartitionID
+	state     *storage.Manager
 	streams   *streamManager
-	index     primitive.Index
+	index     storage.Index
 	timestamp time.Time
 	mu        sync.Mutex
 }
@@ -51,11 +51,11 @@ func (s *StateMachine) NodeID() string {
 	return s.node
 }
 
-func (s *StateMachine) PartitionID() primitive.PartitionID {
+func (s *StateMachine) PartitionID() storage.PartitionID {
 	return s.partition
 }
 
-func (s *StateMachine) Index() primitive.Index {
+func (s *StateMachine) Index() storage.Index {
 	return s.index
 }
 
@@ -118,7 +118,7 @@ func (s *StateMachine) RecoverFromSnapshot(reader io.Reader, files []statemachin
 	if _, err := reader.Read(bytes); err != nil {
 		return err
 	}
-	s.index = primitive.Index(binary.BigEndian.Uint64(bytes))
+	s.index = storage.Index(binary.BigEndian.Uint64(bytes))
 	if _, err := reader.Read(bytes); err != nil {
 		return err
 	}

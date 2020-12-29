@@ -16,10 +16,10 @@ package raft
 
 import (
 	"fmt"
-	"github.com/atomix/api/proto/atomix/database"
+	storageapi "github.com/atomix/api/go/atomix/storage"
 	"github.com/atomix/dragonboat-raft-storage-node/pkg/atomix/raft/config"
 	"github.com/atomix/go-framework/pkg/atomix/cluster"
-	"github.com/atomix/go-framework/pkg/atomix/primitive"
+	"github.com/atomix/go-framework/pkg/atomix/storage"
 	"github.com/lni/dragonboat/v3"
 	raftconfig "github.com/lni/dragonboat/v3/config"
 	"github.com/lni/dragonboat/v3/raftio"
@@ -32,23 +32,23 @@ const dataDir = "/var/lib/atomix/data"
 const rttMillisecond = 200
 
 // NewProtocol returns a new Raft Protocol instance
-func NewProtocol(partitionConfig *database.DatabaseConfig, protocolConfig *config.ProtocolConfig) *Protocol {
+func NewProtocol(storageConfig storageapi.StorageConfig, protocolConfig config.ProtocolConfig) *Protocol {
 	return &Protocol{
-		partitionConfig: partitionConfig,
-		protocolConfig:  protocolConfig,
-		clients:         make(map[primitive.PartitionID]*Partition),
-		servers:         make(map[primitive.PartitionID]*Server),
+		storageConfig:  storageConfig,
+		protocolConfig: protocolConfig,
+		clients:        make(map[storage.PartitionID]*Partition),
+		servers:        make(map[storage.PartitionID]*Server),
 	}
 }
 
 // Protocol is an implementation of the Client interface providing the Raft consensus protocol
 type Protocol struct {
-	primitive.Protocol
-	partitionConfig *database.DatabaseConfig
-	protocolConfig  *config.ProtocolConfig
-	mu              sync.RWMutex
-	clients         map[primitive.PartitionID]*Partition
-	servers         map[primitive.PartitionID]*Server
+	storage.Protocol
+	storageConfig  storageapi.StorageConfig
+	protocolConfig config.ProtocolConfig
+	mu             sync.RWMutex
+	clients        map[storage.PartitionID]*Partition
+	servers        map[storage.PartitionID]*Server
 }
 
 type startupListener struct {
@@ -73,7 +73,7 @@ func (l *startupListener) close() {
 }
 
 // Start starts the Raft protocol
-func (p *Protocol) Start(clusterConfig cluster.Cluster, registry primitive.Registry) error {
+func (p *Protocol) Start(clusterConfig cluster.Cluster, registry storage.Registry) error {
 	member := clusterConfig.Members[clusterConfig.MemberID]
 	address := fmt.Sprintf("%s:%d", member.Host, member.ProtocolPort)
 
@@ -117,17 +117,17 @@ func (p *Protocol) Start(clusterConfig cluster.Cluster, registry primitive.Regis
 
 	fsmFactory := func(clusterID, nodeID uint64) statemachine.IStateMachine {
 		streams := newStreamManager()
-		fsm := newStateMachine(clusterConfig, primitive.PartitionID(clusterID), registry, streams)
+		fsm := newStateMachine(clusterConfig, storage.PartitionID(clusterID), registry, streams)
 		p.mu.Lock()
-		p.clients[primitive.PartitionID(clusterID)] = newClient(clusterID, nodeID, node, clientMembers, streams)
+		p.clients[storage.PartitionID(clusterID)] = newClient(clusterID, nodeID, node, clientMembers, streams)
 		p.mu.Unlock()
 		return fsm
 	}
 
-	for _, partition := range p.partitionConfig.Partitions {
+	for _, partition := range p.storageConfig.Partitions {
 		config := raftconfig.Config{
 			NodeID:             nodeID,
-			ClusterID:          uint64(partition.Partition),
+			ClusterID:          uint64(partition.PartitionID.Partition),
 			ElectionRTT:        10,
 			HeartbeatRTT:       1,
 			CheckQuorum:        true,
@@ -135,11 +135,11 @@ func (p *Protocol) Start(clusterConfig cluster.Cluster, registry primitive.Regis
 			CompactionOverhead: p.protocolConfig.GetSnapshotThresholdOrDefault() / 10,
 		}
 
-		server := newServer(uint64(partition.Partition), serverMembers, node, config, fsmFactory)
+		server := newServer(uint64(partition.PartitionID.Partition), serverMembers, node, config, fsmFactory)
 		if err := server.Start(); err != nil {
 			return err
 		}
-		p.servers[primitive.PartitionID(partition.Partition)] = server
+		p.servers[storage.PartitionID(partition.PartitionID.Partition)] = server
 	}
 
 	startedCh := make(chan struct{})
@@ -160,17 +160,17 @@ func (p *Protocol) Start(clusterConfig cluster.Cluster, registry primitive.Regis
 }
 
 // Partition returns the given partition client
-func (p *Protocol) Partition(partitionID primitive.PartitionID) primitive.Partition {
+func (p *Protocol) Partition(partitionID storage.PartitionID) storage.Partition {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 	return p.clients[partitionID]
 }
 
 // Partitions returns all partition clients
-func (p *Protocol) Partitions() []primitive.Partition {
+func (p *Protocol) Partitions() []storage.Partition {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
-	partitions := make([]primitive.Partition, 0, len(p.clients))
+	partitions := make([]storage.Partition, 0, len(p.clients))
 	for _, client := range p.clients {
 		partitions = append(partitions, client)
 	}
