@@ -17,18 +17,19 @@ package main
 import (
 	"bytes"
 	"fmt"
-	storageapi "github.com/atomix/api/go/atomix/storage"
-	"github.com/atomix/go-framework/pkg/atomix/counter"
-	"github.com/atomix/go-framework/pkg/atomix/election"
-	"github.com/atomix/go-framework/pkg/atomix/indexedmap"
-	"github.com/atomix/go-framework/pkg/atomix/leader"
-	"github.com/atomix/go-framework/pkg/atomix/list"
-	"github.com/atomix/go-framework/pkg/atomix/lock"
-	logprimitive "github.com/atomix/go-framework/pkg/atomix/log"
-	"github.com/atomix/go-framework/pkg/atomix/map"
-	"github.com/atomix/go-framework/pkg/atomix/proxy"
-	"github.com/atomix/go-framework/pkg/atomix/set"
-	"github.com/atomix/go-framework/pkg/atomix/value"
+	"github.com/atomix/api/go/atomix/protocol"
+	"github.com/atomix/go-framework/pkg/atomix/cluster"
+	"github.com/atomix/go-framework/pkg/atomix/proxy/rsm"
+	"github.com/atomix/go-framework/pkg/atomix/proxy/rsm/counter"
+	"github.com/atomix/go-framework/pkg/atomix/proxy/rsm/election"
+	"github.com/atomix/go-framework/pkg/atomix/proxy/rsm/indexedmap"
+	"github.com/atomix/go-framework/pkg/atomix/proxy/rsm/leader"
+	"github.com/atomix/go-framework/pkg/atomix/proxy/rsm/list"
+	"github.com/atomix/go-framework/pkg/atomix/proxy/rsm/lock"
+	logprimitive "github.com/atomix/go-framework/pkg/atomix/proxy/rsm/log"
+	"github.com/atomix/go-framework/pkg/atomix/proxy/rsm/map"
+	"github.com/atomix/go-framework/pkg/atomix/proxy/rsm/set"
+	"github.com/atomix/go-framework/pkg/atomix/proxy/rsm/value"
 	"github.com/gogo/protobuf/jsonpb"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
@@ -41,22 +42,23 @@ func main() {
 	log.SetOutput(os.Stdout)
 
 	nodeID := os.Args[1]
-	storageConfig := parseStorageConfig()
+	config := parseConfig()
 
 	// Create an Atomix node
-	node := proxy.NewNode(nodeID, storageConfig)
+	cluster := cluster.NewCluster(config, cluster.WithMemberID(nodeID))
+	node := rsm.NewNode(cluster)
 
 	// Register primitives on the Atomix node
-	counter.RegisterServer(node)
-	election.RegisterServer(node)
-	indexedmap.RegisterServer(node)
-	lock.RegisterServer(node)
-	logprimitive.RegisterServer(node)
-	leader.RegisterServer(node)
-	list.RegisterServer(node)
-	_map.RegisterServer(node)
-	set.RegisterServer(node)
-	value.RegisterServer(node)
+	counter.RegisterProxy(node)
+	election.RegisterProxy(node)
+	indexedmap.RegisterProxy(node)
+	lock.RegisterProxy(node)
+	logprimitive.RegisterProxy(node)
+	leader.RegisterProxy(node)
+	list.RegisterProxy(node)
+	_map.RegisterProxy(node)
+	set.RegisterProxy(node)
+	value.RegisterProxy(node)
 
 	// Start the node
 	if err := node.Start(); err != nil {
@@ -76,17 +78,17 @@ func main() {
 	}
 }
 
-func parseStorageConfig() storageapi.StorageConfig {
-	storageConfigFile := os.Args[2]
-	storageConfig := storageapi.StorageConfig{}
-	nodeBytes, err := ioutil.ReadFile(storageConfigFile)
+func parseConfig() protocol.ProtocolConfig {
+	configFile := os.Args[2]
+	config := protocol.ProtocolConfig{}
+	nodeBytes, err := ioutil.ReadFile(configFile)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	if err := jsonpb.Unmarshal(bytes.NewReader(nodeBytes), &storageConfig); err != nil {
+	if err := jsonpb.Unmarshal(bytes.NewReader(nodeBytes), &config); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	return storageConfig
+	return config
 }

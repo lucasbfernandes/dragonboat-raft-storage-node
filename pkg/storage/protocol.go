@@ -16,10 +16,10 @@ package storage
 
 import (
 	"fmt"
-	storageapi "github.com/atomix/api/go/atomix/storage"
 	"github.com/atomix/dragonboat-raft-storage-node/pkg/storage/config"
 	"github.com/atomix/go-framework/pkg/atomix/cluster"
-	"github.com/atomix/go-framework/pkg/atomix/storage"
+	"github.com/atomix/go-framework/pkg/atomix/errors"
+	"github.com/atomix/go-framework/pkg/atomix/protocol/rsm"
 	"github.com/lni/dragonboat/v3"
 	raftconfig "github.com/lni/dragonboat/v3/config"
 	"github.com/lni/dragonboat/v3/raftio"
@@ -32,23 +32,21 @@ const dataDir = "/var/lib/atomix/data"
 const rttMillisecond = 200
 
 // NewProtocol returns a new Raft Protocol instance
-func NewProtocol(storageConfig storageapi.StorageConfig, protocolConfig config.ProtocolConfig) *Protocol {
+func NewProtocol(config config.ProtocolConfig) *Protocol {
 	return &Protocol{
-		storageConfig:  storageConfig,
-		protocolConfig: protocolConfig,
-		clients:        make(map[storage.PartitionID]*Partition),
-		servers:        make(map[storage.PartitionID]*Server),
+		config:  config,
+		clients: make(map[rsm.PartitionID]*Partition),
+		servers: make(map[rsm.PartitionID]*Server),
 	}
 }
 
 // Protocol is an implementation of the Client interface providing the Raft consensus protocol
 type Protocol struct {
-	storage.Protocol
-	storageConfig  storageapi.StorageConfig
-	protocolConfig config.ProtocolConfig
-	mu             sync.RWMutex
-	clients        map[storage.PartitionID]*Partition
-	servers        map[storage.PartitionID]*Server
+	rsm.Protocol
+	config  config.ProtocolConfig
+	mu      sync.RWMutex
+	clients map[rsm.PartitionID]*Partition
+	servers map[rsm.PartitionID]*Server
 }
 
 type startupListener struct {
@@ -73,25 +71,29 @@ func (l *startupListener) close() {
 }
 
 // Start starts the Raft protocol
-func (p *Protocol) Start(clusterConfig cluster.Cluster, registry storage.Registry) error {
-	member := clusterConfig.Members[clusterConfig.MemberID]
-	address := fmt.Sprintf("%s:%d", member.Host, member.ProtocolPort)
-
-	nodes := make([]cluster.Member, 0, len(clusterConfig.Members))
-	for _, member := range clusterConfig.Members {
-		nodes = append(nodes, member)
+func (p *Protocol) Start(c *cluster.Cluster, registry rsm.Registry) error {
+	member, ok := c.Member()
+	if !ok {
+		return errors.NewInternal("local member not configured")
 	}
-	sort.Slice(nodes, func(i, j int) bool {
-		return nodes[i].ID < nodes[j].ID
+
+	address := fmt.Sprintf("%s:%d", member.Host, member.Port)
+
+	replicas := make([]*cluster.Replica, 0, len(c.Replicas()))
+	for _, replica := range c.Replicas() {
+		replicas = append(replicas, replica)
+	}
+	sort.Slice(replicas, func(i, j int) bool {
+		return replicas[i].ID < replicas[j].ID
 	})
 
 	var nodeID uint64
 	clientMembers := make(map[uint64]string)
 	serverMembers := make(map[uint64]string)
-	for i, member := range nodes {
-		clientMembers[uint64(i+1)] = fmt.Sprintf("%s:%d", member.Host, member.APIPort)
-		serverMembers[uint64(i+1)] = fmt.Sprintf("%s:%d", member.Host, member.ProtocolPort)
-		if member.ID == clusterConfig.MemberID {
+	for i, replica := range replicas {
+		clientMembers[uint64(i+1)] = fmt.Sprintf("%s:%d", replica.Host, replica.Port)
+		serverMembers[uint64(i+1)] = fmt.Sprintf("%s:8080", replica.Host)
+		if replica.ID == member.ID {
 			nodeID = uint64(i + 1)
 		}
 	}
@@ -117,29 +119,29 @@ func (p *Protocol) Start(clusterConfig cluster.Cluster, registry storage.Registr
 
 	fsmFactory := func(clusterID, nodeID uint64) statemachine.IStateMachine {
 		streams := newStreamManager()
-		fsm := newStateMachine(clusterConfig, storage.PartitionID(clusterID), registry, streams)
+		fsm := newStateMachine(c, rsm.PartitionID(clusterID), registry, streams)
 		p.mu.Lock()
-		p.clients[storage.PartitionID(clusterID)] = newClient(clusterID, nodeID, node, clientMembers, streams)
+		p.clients[rsm.PartitionID(clusterID)] = newClient(clusterID, nodeID, node, clientMembers, streams)
 		p.mu.Unlock()
 		return fsm
 	}
 
-	for _, partition := range p.storageConfig.Partitions {
+	for _, partition := range c.Partitions() {
 		config := raftconfig.Config{
 			NodeID:             nodeID,
-			ClusterID:          uint64(partition.PartitionID.Partition),
+			ClusterID:          uint64(partition.ID),
 			ElectionRTT:        10,
 			HeartbeatRTT:       1,
 			CheckQuorum:        true,
-			SnapshotEntries:    p.protocolConfig.GetSnapshotThresholdOrDefault(),
-			CompactionOverhead: p.protocolConfig.GetSnapshotThresholdOrDefault() / 10,
+			SnapshotEntries:    p.config.GetSnapshotThresholdOrDefault(),
+			CompactionOverhead: p.config.GetSnapshotThresholdOrDefault() / 10,
 		}
 
-		server := newServer(uint64(partition.PartitionID.Partition), serverMembers, node, config, fsmFactory)
+		server := newServer(uint64(partition.ID), serverMembers, node, config, fsmFactory)
 		if err := server.Start(); err != nil {
 			return err
 		}
-		p.servers[storage.PartitionID(partition.PartitionID.Partition)] = server
+		p.servers[rsm.PartitionID(partition.ID)] = server
 	}
 
 	startedCh := make(chan struct{})
@@ -160,17 +162,17 @@ func (p *Protocol) Start(clusterConfig cluster.Cluster, registry storage.Registr
 }
 
 // Partition returns the given partition client
-func (p *Protocol) Partition(partitionID storage.PartitionID) storage.Partition {
+func (p *Protocol) Partition(partitionID rsm.PartitionID) rsm.Partition {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 	return p.clients[partitionID]
 }
 
 // Partitions returns all partition clients
-func (p *Protocol) Partitions() []storage.Partition {
+func (p *Protocol) Partitions() []rsm.Partition {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
-	partitions := make([]storage.Partition, 0, len(p.clients))
+	partitions := make([]rsm.Partition, 0, len(p.clients))
 	for _, client := range p.clients {
 		partitions = append(partitions, client)
 	}

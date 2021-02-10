@@ -17,20 +17,21 @@ package main
 import (
 	"bytes"
 	"fmt"
-	storageapi "github.com/atomix/api/go/atomix/storage"
+	"github.com/atomix/api/go/atomix/protocol"
 	raft "github.com/atomix/dragonboat-raft-storage-node/pkg/storage"
 	"github.com/atomix/dragonboat-raft-storage-node/pkg/storage/config"
-	"github.com/atomix/go-framework/pkg/atomix/counter"
-	"github.com/atomix/go-framework/pkg/atomix/election"
-	"github.com/atomix/go-framework/pkg/atomix/indexedmap"
-	"github.com/atomix/go-framework/pkg/atomix/leader"
-	"github.com/atomix/go-framework/pkg/atomix/list"
-	"github.com/atomix/go-framework/pkg/atomix/lock"
-	logprimitive "github.com/atomix/go-framework/pkg/atomix/log"
-	"github.com/atomix/go-framework/pkg/atomix/map"
-	"github.com/atomix/go-framework/pkg/atomix/set"
-	"github.com/atomix/go-framework/pkg/atomix/storage"
-	"github.com/atomix/go-framework/pkg/atomix/value"
+	"github.com/atomix/go-framework/pkg/atomix/cluster"
+	"github.com/atomix/go-framework/pkg/atomix/protocol/rsm"
+	"github.com/atomix/go-framework/pkg/atomix/protocol/rsm/counter"
+	"github.com/atomix/go-framework/pkg/atomix/protocol/rsm/election"
+	"github.com/atomix/go-framework/pkg/atomix/protocol/rsm/indexedmap"
+	"github.com/atomix/go-framework/pkg/atomix/protocol/rsm/leader"
+	"github.com/atomix/go-framework/pkg/atomix/protocol/rsm/list"
+	"github.com/atomix/go-framework/pkg/atomix/protocol/rsm/lock"
+	logprimitive "github.com/atomix/go-framework/pkg/atomix/protocol/rsm/log"
+	"github.com/atomix/go-framework/pkg/atomix/protocol/rsm/map"
+	"github.com/atomix/go-framework/pkg/atomix/protocol/rsm/set"
+	"github.com/atomix/go-framework/pkg/atomix/protocol/rsm/value"
 	"github.com/gogo/protobuf/jsonpb"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
@@ -43,11 +44,13 @@ func main() {
 	log.SetOutput(os.Stdout)
 
 	nodeID := os.Args[1]
-	storageConfig := parseStorageConfig()
 	protocolConfig := parseProtocolConfig()
+	raftConfig := parseRaftConfig()
+
+	cluster := cluster.NewCluster(protocolConfig, cluster.WithMemberID(nodeID))
 
 	// Create an Atomix node
-	node := storage.NewNode(nodeID, storageConfig, raft.NewProtocol(storageConfig, protocolConfig))
+	node := rsm.NewNode(cluster, raft.NewProtocol(raftConfig))
 
 	// Register primitives on the Atomix node
 	counter.RegisterService(node)
@@ -79,22 +82,22 @@ func main() {
 	}
 }
 
-func parseStorageConfig() storageapi.StorageConfig {
-	storageConfigFile := os.Args[2]
-	storageConfig := storageapi.StorageConfig{}
-	nodeBytes, err := ioutil.ReadFile(storageConfigFile)
+func parseProtocolConfig() protocol.ProtocolConfig {
+	configFile := os.Args[2]
+	config := protocol.ProtocolConfig{}
+	nodeBytes, err := ioutil.ReadFile(configFile)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	if err := jsonpb.Unmarshal(bytes.NewReader(nodeBytes), &storageConfig); err != nil {
+	if err := jsonpb.Unmarshal(bytes.NewReader(nodeBytes), &config); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	return storageConfig
+	return config
 }
 
-func parseProtocolConfig() config.ProtocolConfig {
+func parseRaftConfig() config.ProtocolConfig {
 	protocolConfigFile := os.Args[3]
 	protocolConfig := config.ProtocolConfig{}
 	protocolBytes, err := ioutil.ReadFile(protocolConfigFile)

@@ -16,7 +16,7 @@ package storage
 
 import (
 	"context"
-	"github.com/atomix/go-framework/pkg/atomix/storage"
+	"github.com/atomix/go-framework/pkg/atomix/protocol/rsm"
 	streams "github.com/atomix/go-framework/pkg/atomix/stream"
 	"github.com/gogo/protobuf/proto"
 	"github.com/lni/dragonboat/v3"
@@ -99,4 +99,4 @@ func (c *Partition) ExecuteQuery(ctx context.Context, input []byte, stream strea
 	return nil
 }
 
-var _ storage.Partition = &Partition{}
+var _ rsm.Partition = &Partition{}
