@@ -14,8 +14,8 @@ github.com/ajg/form v1.5.1/go.mod h1:uL1WgH+h2mgNtvBq0339dVnzXdBETtL2LeUXaIv25UY
 github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6/go.mod h1:grANhF5doyWs3UAsr3K4I6qtAmlQcZDesFNEHPZAzj8=
 github.com/atomix/api v0.3.3 h1:7iTCHxeTrnkZ5C0S6XTXkBCYjUW4KbTjDd3X4pxD3Us=
 github.com/atomix/api v0.3.3/go.mod h1:G8fCdKYiPhZMYTgfz7QAtw6JqIfY2szigiz/gILNY50=
-github.com/atomix/go-framework v0.5.1 h1:gRpwnNWWaccBr9f9E2MgNFEv/GqaXbv6QR6fQjEfcZI=
-github.com/atomix/go-framework v0.5.1/go.mod h1:5IGQzFZ+nixj7VmmiX+ntQCWXJ2ShT+0Un2BgWKL+mA=
+github.com/atomix/go-framework v0.5.2 h1:lenrtqZko+VA4HlqPzZupKTmkQh2ymSPpBO/QmG8WXU=
+github.com/atomix/go-framework v0.5.2/go.mod h1:5IGQzFZ+nixj7VmmiX+ntQCWXJ2ShT+0Un2BgWKL+mA=
 github.com/aymerick/raymond v2.0.3-0.20180322193309-b565731e1464+incompatible/go.mod h1:osfaiScAUVup+UC9Nfq76eWqDhXlp+4UYaA8uhTBO6g=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/certifi/gocertifi v0.0.0-20200211180108-c7c1fbc02894/go.mod h1:sGbDF6GwGcLpkNXPUTkMRoywsNa/ol15pxFe6ERfguA=
