@@ -19,7 +19,7 @@ import (
 	"github.com/atomix/dragonboat-raft-storage-node/pkg/storage/config"
 	"github.com/atomix/go-framework/pkg/atomix/cluster"
 	"github.com/atomix/go-framework/pkg/atomix/errors"
-	"github.com/atomix/go-framework/pkg/atomix/protocol/rsm"
+	protocol "github.com/atomix/go-framework/pkg/atomix/protocol/rsm"
 	"github.com/lni/dragonboat/v3"
 	raftconfig "github.com/lni/dragonboat/v3/config"
 	"github.com/lni/dragonboat/v3/raftio"
@@ -35,18 +35,18 @@ const rttMillisecond = 200
 func NewProtocol(config config.ProtocolConfig) *Protocol {
 	return &Protocol{
 		config:  config,
-		clients: make(map[rsm.PartitionID]*Partition),
-		servers: make(map[rsm.PartitionID]*Server),
+		clients: make(map[protocol.PartitionID]*Partition),
+		servers: make(map[protocol.PartitionID]*Server),
 	}
 }
 
 // Protocol is an implementation of the Client interface providing the Raft consensus protocol
 type Protocol struct {
-	rsm.Protocol
+	protocol.Protocol
 	config  config.ProtocolConfig
 	mu      sync.RWMutex
-	clients map[rsm.PartitionID]*Partition
-	servers map[rsm.PartitionID]*Server
+	clients map[protocol.PartitionID]*Partition
+	servers map[protocol.PartitionID]*Server
 }
 
 type startupListener struct {
@@ -71,7 +71,7 @@ func (l *startupListener) close() {
 }
 
 // Start starts the Raft protocol
-func (p *Protocol) Start(c *cluster.Cluster, registry rsm.Registry) error {
+func (p *Protocol) Start(c cluster.Cluster, registry *protocol.Registry) error {
 	member, ok := c.Member()
 	if !ok {
 		return errors.NewInternal("local member not configured")
@@ -119,9 +119,9 @@ func (p *Protocol) Start(c *cluster.Cluster, registry rsm.Registry) error {
 
 	fsmFactory := func(clusterID, nodeID uint64) statemachine.IStateMachine {
 		streams := newStreamManager()
-		fsm := newStateMachine(c, rsm.PartitionID(clusterID), registry, streams)
+		fsm := newStateMachine(c, protocol.PartitionID(clusterID), registry, streams)
 		p.mu.Lock()
-		p.clients[rsm.PartitionID(clusterID)] = newClient(clusterID, nodeID, node, clientMembers, streams)
+		p.clients[protocol.PartitionID(clusterID)] = newClient(clusterID, nodeID, node, clientMembers, streams)
 		p.mu.Unlock()
 		return fsm
 	}
@@ -129,7 +129,7 @@ func (p *Protocol) Start(c *cluster.Cluster, registry rsm.Registry) error {
 	for _, partition := range c.Partitions() {
 		config := raftconfig.Config{
 			NodeID:             nodeID,
-			ClusterID:          uint64(partition.ID),
+			ClusterID:          uint64(partition.ID()),
 			ElectionRTT:        10,
 			HeartbeatRTT:       1,
 			CheckQuorum:        true,
@@ -137,11 +137,11 @@ func (p *Protocol) Start(c *cluster.Cluster, registry rsm.Registry) error {
 			CompactionOverhead: p.config.GetSnapshotThresholdOrDefault() / 10,
 		}
 
-		server := newServer(uint64(partition.ID), serverMembers, node, config, fsmFactory)
+		server := newServer(uint64(partition.ID()), serverMembers, node, config, fsmFactory)
 		if err := server.Start(); err != nil {
 			return err
 		}
-		p.servers[rsm.PartitionID(partition.ID)] = server
+		p.servers[protocol.PartitionID(partition.ID())] = server
 	}
 
 	startedCh := make(chan struct{})
@@ -162,17 +162,17 @@ func (p *Protocol) Start(c *cluster.Cluster, registry rsm.Registry) error {
 }
 
 // Partition returns the given partition client
-func (p *Protocol) Partition(partitionID rsm.PartitionID) rsm.Partition {
+func (p *Protocol) Partition(partitionID protocol.PartitionID) protocol.Partition {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 	return p.clients[partitionID]
 }
 
 // Partitions returns all partition clients
-func (p *Protocol) Partitions() []rsm.Partition {
+func (p *Protocol) Partitions() []protocol.Partition {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
-	partitions := make([]rsm.Partition, 0, len(p.clients))
+	partitions := make([]protocol.Partition, 0, len(p.clients))
 	for _, client := range p.clients {
 		partitions = append(partitions, client)
 	}
