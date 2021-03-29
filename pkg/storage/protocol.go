@@ -77,7 +77,7 @@ func (p *Protocol) Start(c cluster.Cluster, registry *protocol.Registry) error {
 		return errors.NewInternal("local member not configured")
 	}
 
-	address := fmt.Sprintf("%s:%d", member.Host, member.Port)
+	address := fmt.Sprintf("%s:%d", member.Host, member.GetPort("raft"))
 
 	replicas := make([]*cluster.Replica, 0, len(c.Replicas()))
 	for _, replica := range c.Replicas() {
@@ -92,7 +92,7 @@ func (p *Protocol) Start(c cluster.Cluster, registry *protocol.Registry) error {
 	serverMembers := make(map[uint64]string)
 	for i, replica := range replicas {
 		clientMembers[uint64(i+1)] = fmt.Sprintf("%s:%d", replica.Host, replica.Port)
-		serverMembers[uint64(i+1)] = fmt.Sprintf("%s:8080", replica.Host)
+		serverMembers[uint64(i+1)] = fmt.Sprintf("%s:%d", replica.Host, replica.GetPort("raft"))
 		if replica.ID == member.ID {
 			nodeID = uint64(i + 1)
 		}

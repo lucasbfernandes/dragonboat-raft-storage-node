@@ -43,6 +43,11 @@ images: build
 	docker build . -f build/dragonboat-raft-storage-node/Dockerfile -t atomix/dragonboat-raft-storage-node:${RAFT_STORAGE_NODE_VERSION}
 	docker build . -f build/dragonboat-raft-storage-driver/Dockerfile -t atomix/dragonboat-raft-storage-driver:${RAFT_STORAGE_NODE_VERSION}
 
+kind: images
+	@if [ "`kind get clusters`" = '' ]; then echo "no kind cluster found" && exit 1; fi
+	kind load docker-image atomix/dragonboat-raft-storage-node:${RAFT_STORAGE_NODE_VERSION}
+	kind load docker-image atomix/dragonboat-raft-storage-driver:${RAFT_STORAGE_NODE_VERSION}
+
 clean: # @HELP clean build files
 	@rm -rf vendor build/_output
 

@@ -21,6 +21,7 @@ import (
 	raft "github.com/atomix/dragonboat-raft-storage-node/pkg/storage"
 	"github.com/atomix/dragonboat-raft-storage-node/pkg/storage/config"
 	"github.com/atomix/go-framework/pkg/atomix/cluster"
+	"github.com/atomix/go-framework/pkg/atomix/logging"
 	"github.com/atomix/go-framework/pkg/atomix/protocol/rsm"
 	"github.com/atomix/go-framework/pkg/atomix/protocol/rsm/counter"
 	"github.com/atomix/go-framework/pkg/atomix/protocol/rsm/election"
@@ -33,15 +34,13 @@ import (
 	"github.com/atomix/go-framework/pkg/atomix/protocol/rsm/set"
 	"github.com/atomix/go-framework/pkg/atomix/protocol/rsm/value"
 	"github.com/gogo/protobuf/jsonpb"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"os/signal"
 )
 
 func main() {
-	log.SetLevel(log.InfoLevel)
-	log.SetOutput(os.Stdout)
+	logging.SetLevel(logging.DebugLevel)
 
 	nodeID := os.Args[1]
 	protocolConfig := parseProtocolConfig()

@@ -17,14 +17,13 @@ package main
 import (
 	"fmt"
 	driver "github.com/atomix/go-framework/pkg/atomix/driver/protocol/rsm"
-	log "github.com/sirupsen/logrus"
+	"github.com/atomix/go-framework/pkg/atomix/logging"
 	"os"
 	"os/signal"
 )
 
 func main() {
-	log.SetLevel(log.InfoLevel)
-	log.SetOutput(os.Stdout)
+	logging.SetLevel(logging.DebugLevel)
 
 	// Create an Atomix node
 	node := driver.NewNode()
