@@ -16,9 +16,9 @@ package raft
 
 import (
 	"encoding/binary"
-	"github.com/atomix/go-framework/pkg/atomix/cluster"
-	"github.com/atomix/go-framework/pkg/atomix/primitive"
-	"github.com/atomix/go-framework/pkg/atomix/stream"
+	"github.com/lucasbfernandes/go-framework/pkg/atomix/cluster"
+	"github.com/lucasbfernandes/go-framework/pkg/atomix/primitive"
+	"github.com/lucasbfernandes/go-framework/pkg/atomix/stream"
 	"github.com/gogo/protobuf/proto"
 	"github.com/lni/dragonboat/v3/statemachine"
 	"io"

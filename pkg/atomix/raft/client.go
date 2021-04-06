@@ -16,7 +16,7 @@ package raft
 
 import (
 	"context"
-	streams "github.com/atomix/go-framework/pkg/atomix/stream"
+	streams "github.com/lucasbfernandes/go-framework/pkg/atomix/stream"
 	"github.com/gogo/protobuf/proto"
 	"github.com/lni/dragonboat/v3"
 	"time"

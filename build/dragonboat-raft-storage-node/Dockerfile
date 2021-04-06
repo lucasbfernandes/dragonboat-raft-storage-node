@@ -1,7 +1,16 @@
-FROM alpine:3.9
+FROM golang:1.14-alpine
 
-USER nobody
+RUN apk add --no-cache git
+RUN apk add build-base
 
-ADD build/_output/dragonboat-raft-storage-node /usr/local/bin/dragonboat-raft-storage-node
+WORKDIR /app/dragonboat-raft-storage-node
+COPY ./go.mod .
+COPY ./go.sum .
 
-ENTRYPOINT ["dragonboat-raft-storage-node"]
+RUN go mod download
+
+COPY . .
+
+RUN go build -o ./out/dragonboat-raft-storage-node cmd/dragonboat-raft-storage-node/*.go
+
+ENTRYPOINT ["./out/dragonboat-raft-storage-node"]

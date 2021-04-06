@@ -20,17 +20,17 @@ import (
 	"github.com/atomix/api/proto/atomix/database"
 	"github.com/atomix/dragonboat-raft-storage-node/pkg/atomix/raft"
 	"github.com/atomix/dragonboat-raft-storage-node/pkg/atomix/raft/config"
-	"github.com/atomix/go-framework/pkg/atomix"
-	"github.com/atomix/go-framework/pkg/atomix/counter"
-	"github.com/atomix/go-framework/pkg/atomix/election"
-	"github.com/atomix/go-framework/pkg/atomix/indexedmap"
-	"github.com/atomix/go-framework/pkg/atomix/leader"
-	"github.com/atomix/go-framework/pkg/atomix/list"
-	"github.com/atomix/go-framework/pkg/atomix/lock"
-	logprimitive "github.com/atomix/go-framework/pkg/atomix/log"
-	"github.com/atomix/go-framework/pkg/atomix/map"
-	"github.com/atomix/go-framework/pkg/atomix/set"
-	"github.com/atomix/go-framework/pkg/atomix/value"
+	"github.com/lucasbfernandes/go-framework/pkg/atomix"
+	"github.com/lucasbfernandes/go-framework/pkg/atomix/counter"
+	"github.com/lucasbfernandes/go-framework/pkg/atomix/election"
+	"github.com/lucasbfernandes/go-framework/pkg/atomix/indexedmap"
+	"github.com/lucasbfernandes/go-framework/pkg/atomix/leader"
+	"github.com/lucasbfernandes/go-framework/pkg/atomix/list"
+	"github.com/lucasbfernandes/go-framework/pkg/atomix/lock"
+	logprimitive "github.com/lucasbfernandes/go-framework/pkg/atomix/log"
+	"github.com/lucasbfernandes/go-framework/pkg/atomix/map"
+	"github.com/lucasbfernandes/go-framework/pkg/atomix/set"
+	"github.com/lucasbfernandes/go-framework/pkg/atomix/value"
 	"github.com/gogo/protobuf/jsonpb"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
@@ -39,7 +39,7 @@ import (
 )
 
 func main() {
-	log.SetLevel(log.InfoLevel)
+	log.SetLevel(log.TraceLevel)
 	log.SetOutput(os.Stdout)
 
 	nodeID := os.Args[1]
